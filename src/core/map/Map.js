@@ -100,8 +100,9 @@ class Map {
     var lng = Cesium.Math.toDegrees(cartographic.longitude)
 
     let labelopt = {
-        type: 'BrokenLineLabel', // BrokenLineLabel DipChartLabel
+        type: 'TaperLabel', // BrokenLineLabel DipChartLabel ChartLabel GlintLabel TaperLabel
         position: [lng, lat, 0],
+        // background: 'null',
         selectEvents: () => {},
         createEvents: () => {},
         getPosition: () => {}

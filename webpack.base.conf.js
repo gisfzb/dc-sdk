@@ -21,6 +21,9 @@ let cesiumCopyPlugin = [
     { from: path.join(cesiumBuild, 'ThirdParty'), to: 'resources/ThirdParty' }
   ]),
   new CopyWebpackPlugin([
+    { from: path.join('static', 'Images'), to: 'resources/images' }
+  ]),
+  new CopyWebpackPlugin([
     { from: path.join('demo', 'index.html'), to: '../../index.html' }
   ])
 ]

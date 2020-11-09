@@ -1,69 +1,112 @@
 const { Cesium } = DC.Namespace
 import BaseLabel from './BaseLabel'
+import { DivIcon} from '../../overlay'
 import { MouseEventType } from '../../event';
 import CesiumUtils from '../utils/CesiumUtils'
 import LabelUtils from './LabelUtils';
 import ElliposidFadeMaterialProperty from '../utils/ElliposidFadeMaterial'
 
-class BrokenLineLabel extends BaseLabel {
-    constructor(viewer, options, getCreateID){
-        super(viewer, options, getCreateID)
-        // this._drag = false
+class ChartLabel extends BaseLabel {
+    constructor(viewer, position, options){
+        super(viewer, position, options)
+        this._drag = false
 
-        let id = Cesium.defaultValue(options.id, CesiumUtils.getID(10));
+        var id = Cesium.defaultValue(options.id, CesiumUtils.getID(10));
         if (id.indexOf('billboard') >= 0) {
             id = id.substring(9);
         }
+        var canvas = LabelUtils.createHiDPICanvas(100, 50, 25);
+        var color = Cesium.defaultValue(options.color, 'rgba(94, 170, 241, 1)');
+        var panColor = Cesium.defaultValue(options.panColor, 'rgba(94, 170, 241, 1)');
+        panColor = LabelUtils.paseRgba(panColor, 'GLH');
+    
+        var text = Cesium.defaultValue(options.text, '请输入：')
+        var size = Cesium.defaultValue(options.size, 5);
+        var isChange = Cesium.defaultValue(options.isChange, true);
+        var background = Cesium.defaultValue(options.background, 'background2');
+        var backgroundPicture;
+        switch (background) {
+            case 'background1':
+                backgroundPicture = Cesium.buildModuleUrl('images/videoBorad.png');
+                break;
+            case 'background2':
+                backgroundPicture = Cesium.buildModuleUrl('Images/labelbackground1.png');
+                break;
+            case 'background3':
+                backgroundPicture = Cesium.buildModuleUrl('Images/labelbackground2.png');
+                break;
+            default:
+                backgroundPicture = Cesium.buildModuleUrl('Images/videoBorad.png');
+                break;
+        }
 
-        let text = Cesium.defaultValue(options.text, '请输入:');
-        let size = Cesium.defaultValue(options.size, 3);
-        let color = Cesium.defaultValue(options.color, 'rgba(94, 170, 241, 1)');
-        let position = Cesium.defaultValue(options.position, [108.933337, 34.26178, 0]);
-        let isChange = Cesium.defaultValue(options.isChange, false);
-        getCreateID = Cesium.defaultValue(getCreateID, function() {});
-
-        let labelDiv = document.createElement('div');
-        labelDiv.style.width = '300px';
-        labelDiv.style.height = '200px';
-        labelDiv.style.position = 'absolute';
-        labelDiv.style.pointerEvents = 'none';
-        let labelCanvas = LabelUtils.createHiDPICanvas(300, 200,2);
-        labelDiv.appendChild(labelCanvas);
-
-        let ctx = labelCanvas.getContext('2d');
+        var ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, 100, 50);
+        ctx.textAlign = 'center';
         ctx.strokeStyle = color;
-        ctx.beginPath();
-        ctx.lineTo(0, 200);
-        ctx.lineTo(100, 100);
-        ctx.lineTo(200, 100);        
-        ctx.stroke();
-        ctx.font = '12px console';
+        ctx.font = '6px 微软雅黑';
         ctx.fillStyle = color;
-        ctx.fillText(text, 110, 90);
+        var str = text.length;
+        var roll = Math.ceil(str / 14) <= 3 ? Math.ceil(str / 14) : 3;
+        var rolladd = 1;
+        while (rolladd <= roll) {
+            ctx.fillText(text.substring((rolladd - 1) * 14, rolladd * 14), 50, 25 + (rolladd - 1) * 7);
+            rolladd++;
+            
+        console.log("99999999999999999999",canvas)
+        }
 
-        this._label = new Cesium.Entity({
-            name: 'billboard' + id,
-            id: 'billboard' + id,
+        // this._label = ctx;
+
+        // this._label = new DivBillboard(
+        //     new DC.Position.fromCoordArray(this._position),
+        //     `<h1>QQQ</h1>`
+        // )
+        this._label = new Array();
+        let entity = new Cesium.Entity({
             position: Cesium.Cartesian3.fromDegrees(position[0], position[1], position[2]),
+            name: 'picturebillboard' + id,
+            id: 'picturebillboard' + id,
             billboard: {
-                image: labelCanvas,
-                horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+                image: backgroundPicture,
+                horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
                 verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
                 scale: size,
-                width: 75,
+                width: 100,
                 height: 50,
                 sizeInMeters: isChange
+            },
+            ellipse: {
+                semiMinorAxis: 150,
+                semiMajorAxis: 150,
+                height: position[2] - 100,
+                material: new ElliposidFadeMaterialProperty(CesiumUtils.getCesiumColor(panColor), 4000)
             }
-        });
+        })
+        this._label.push(entity)
 
-        var st = {
-            id: this._label.id,
-            position: position
-        };
-
-        getCreateID(st);
-
-        
+        let entity2 = new Cesium.Entity({
+            position: Cesium.Cartesian3.fromDegrees(position[0], position[1], position[2]),
+            name: 'billboard' + id,
+            id: 'billboard' + id,
+            description: { heights: position[2], color: color, text: text },
+            billboard: {
+                image: canvas,
+                horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+                verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+                scale: size,
+                width: 100,
+                height: 50,
+                sizeInMeters: isChange
+            },
+            cylinder: {
+                length: 1000 + position[2],
+                topRadius: 200,
+                bottomRadius: 200,
+                material: new Cesium.Color(1, 1, 1, 0.01)
+            }
+        })
+        this._label.push(entity2)
         // this._label = DivIcon.fromEntity(entity2,"test")
         // this._label = entity2
     }
@@ -115,10 +158,10 @@ class BrokenLineLabel extends BaseLabel {
     }
     addTo(viewer){
         // layer.addOverlay(this._label)
-        viewer.entities.add(this._label);
-        // this._label.forEach(function(val, index, arr){
-        //     viewer.entities.add(val)
-        // })
+        // layer.entities.add(this._label);
+        this._label.forEach(function(val, index, arr){
+            viewer.entities.add(val)
+        })
         // layer.addOverlay(this._label);
     }
     _mouseMoveAction (e){
@@ -165,5 +208,5 @@ class BrokenLineLabel extends BaseLabel {
     }
 
 }
-export default BrokenLineLabel
+export default ChartLabel
 
