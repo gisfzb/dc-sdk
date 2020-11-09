@@ -6,6 +6,7 @@
 import ImageryLayerFactory from './imagery/ImageryLayerFactory'
 import TerrainFactory from './terrain/TerrainFactory'
 import Viewer from './viewer/Viewer'
+import Map from './map/Map'
 import {
   LayerGroup,
   GeoJsonLayer,
@@ -75,7 +76,8 @@ const core = {
   Polygon,
   Model,
   Tileset,
-  Math: Cesium.Math
+  Math: Cesium.Math,
+  Map
 }
 
 DC.mixin(core)

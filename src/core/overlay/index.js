@@ -6,6 +6,7 @@
 export { default as OverlayType } from './OverlayType'
 export { default as Overlay } from './Overlay'
 export { default as Billboard } from './base/Billboard'
+export { default as DivBillboard } from './base/DivBillboard'
 export { default as Circle } from './base/Circle'
 export { default as DivIcon } from './base/DivIcon'
 export { default as Label } from './base/Label'

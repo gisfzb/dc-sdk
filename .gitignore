@@ -12,3 +12,4 @@ pack/
 *.njsproj
 package-lock.json
 .DS_Store
+dist/

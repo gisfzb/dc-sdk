@@ -8,7 +8,24 @@ const webpack = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin')
 const JavaScriptObfuscator = require('webpack-obfuscator')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 const cesiumBuild = 'node_modules/cesium/Build/Cesium'
+const cesiumDist = 'libs/dc-sdk/'
+
+let cesiumCopyPlugin = [
+  new CopyWebpackPlugin([
+    { from: path.join(cesiumBuild, 'Assets'), to: 'resources/Assets' }
+  ]),
+  new CopyWebpackPlugin([
+    { from: path.join(cesiumBuild, 'Workers'), to: 'resources/Workers' }
+  ]),
+  new CopyWebpackPlugin([
+    { from: path.join(cesiumBuild, 'ThirdParty'), to: 'resources/ThirdParty' }
+  ]),
+  new CopyWebpackPlugin([
+    { from: path.join('demo', 'index.html'), to: '../../index.html' }
+  ])
+]
 
 function resolve(dir) {
   return path.join(__dirname, '.', dir)
@@ -18,6 +35,7 @@ module.exports = env => {
   const IS_PROD = (env && env.production) || false
   const publicPath = IS_PROD ? '/' : '/'
   let plugins = [
+    ...cesiumCopyPlugin,
     new MiniCssExtractPlugin({
       filename: IS_PROD ? '[name].min.css' : '[name].css',
       allChunks: true
@@ -42,7 +60,7 @@ module.exports = env => {
     devtool: IS_PROD ? false : 'cheap-module-eval-source-map',
     output: {
       filename: IS_PROD ? '[name].min.js' : '[name].js',
-      path: path.resolve(__dirname, 'dist'),
+      path: path.resolve(__dirname, 'dist/'+cesiumDist),
       publicPath: publicPath,
       library: 'DcCore',
       libraryTarget: 'umd',

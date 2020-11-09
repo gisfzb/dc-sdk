@@ -19,6 +19,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "yarn run clean && webpack --config webpack.base.conf --mode development && webpack --config webpack.config --mode development",
     "publish": "yarn run clean && webpack --config webpack.base.conf --mode production --env.production && webpack --config webpack.config --mode production --env.production",
+    "dist": "yarn run clean && webpack --config webpack.base.conf --mode development && webpack --config webpack.config --mode development --progress --watch --hide-modules ",
     "clean": "rimraf dist/"
   },
   "devDependencies": {

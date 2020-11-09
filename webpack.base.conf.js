@@ -8,6 +8,7 @@ const webpack = require('webpack')
 const packageInfo = require('./package.json')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const cesiumBuild = 'node_modules/cesium/Build/Cesium'
+const cesiumDist = 'libs/dc-sdk/'
 
 let cesiumCopyPlugin = [
   new CopyWebpackPlugin([
@@ -18,6 +19,9 @@ let cesiumCopyPlugin = [
   ]),
   new CopyWebpackPlugin([
     { from: path.join(cesiumBuild, 'ThirdParty'), to: 'resources/ThirdParty' }
+  ]),
+  new CopyWebpackPlugin([
+    { from: path.join('demo', 'index.html'), to: '../../index.html' }
   ])
 ]
 
@@ -64,7 +68,7 @@ module.exports = env => {
     devtool: IS_PROD ? false : 'cheap-module-eval-source-map',
     output: {
       filename: IS_PROD ? '[name].min.js' : '[name].js',
-      path: path.resolve(__dirname, 'dist'),
+      path: path.resolve(__dirname, 'dist/'+ cesiumDist),
       publicPath: publicPath,
       library: 'DC',
       libraryExport: 'default',
