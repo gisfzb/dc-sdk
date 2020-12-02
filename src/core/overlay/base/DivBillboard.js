@@ -2,7 +2,7 @@
  * @Author: Caven
  * @Date: 2020-02-12 21:46:22
  */
-
+const { Cesium } = DC.Namespace
 import { DomUtil, Util } from '../../utils'
 import { MouseEventType } from '../../event'
 import { isBetween } from '../../math'
@@ -11,7 +11,7 @@ import Parse from '../../parse/Parse'
 import State from '../../state/State'
 import Overlay from '../Overlay'
 
-class DivBillboard extends Overlay {
+class DivIcon extends Overlay {
   constructor(position, content) {
     super()
     this._delegate = DomUtil.create('div', 'div-icon')
@@ -47,15 +47,19 @@ class DivBillboard extends Overlay {
   }
 
   set content(content) {
+    // if (content && typeof content === 'string') {
+    //   this._delegate.innerHTML = content
+    // } else if (content && content instanceof Element) {
+    //   while (this._delegate.hasChildNodes()) {
+    //     this._delegate.removeChild(this._delegate.firstChild)
+    //   }
+    //   this._delegate.appendChild(content)
+    // }
+    // return this
     let c = DomUtil.create('div', 'div-bullboard-content')
     if (content && typeof content === 'string') {
       c.innerHTML = content
-      // this._delegate.innerHTML = content
     } else if (content && content instanceof Element) {
-      // while (this._delegate.hasChildNodes()) {
-      //   this._delegate.removeChild(this._delegate.firstChild)
-      // }
-      // this._delegate.appendChild(content)
       c.appendChild(content)
     }
     this._delegate.appendChild(c)
@@ -93,7 +97,7 @@ class DivBillboard extends Overlay {
       } else if (distance > scaleByDistance.far) {
         scale3d = `scale3d(${farValue},${farValue},1)`
       } else {
-        let scale = 1-(farValue + f * (nearValue - farValue))
+        let scale = farValue + f * (nearValue - farValue)
         scale3d = `scale3d(${scale},${scale},1)`
       }
     }
@@ -163,7 +167,6 @@ class DivBillboard extends Overlay {
     this._style = style
     this._style.className &&
       DomUtil.addClass(this._delegate, this._style.className)
-      this._delegate.style = style   //自行添加行
     return this
   }
 
@@ -189,6 +192,6 @@ class DivBillboard extends Overlay {
   }
 }
 
-Overlay.registerType('div_billboard')
+Overlay.registerType('div_icon')
 
-export default DivBillboard
+export default DivIcon

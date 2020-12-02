@@ -1,131 +1,109 @@
 import BaseLabel from './BaseLabel'
-import { DivBillboard }  from '../../overlay'
+import { DivBillboard } from '../../overlay'
 import { MouseEventType } from '../../event'
+
+import CesiumUtils from '../utils/CesiumUtils'
+import LabelUtils from './LabelUtils';
 const { Cesium } = DC.Namespace
 class DipChartLabel extends BaseLabel {
-  constructor(viewer, position, options) {
-    super(viewer, position, options)
-    this._drag = false
-    this._label = new DivBillboard(
-      // new DC.Position(this._position[0], this._position[1], this._position[2]),
-        new DC.Position.fromCoordArray(this._position),
-        `<div style="width:100%;position: absolute; top: 0px; left: 0px;line-height: 200px;box-shadow: rgba(33, 132, 216, 0.41) 0px 0px 18px inset;text-align: center;">暂无图表数据</div>`
-    )
-
-    this._label.setStyle("width:200px;height: 200px;position: absolute; top: 0px; left: 0px;border: 1px solid #2184d5;box-shadow: rgba(33, 132, 216, 0.41) 0px 0px 18px inset;");
+  constructor(viewer) {
+    super(viewer)
+    this.viewer = viewer;
   }
-  _handlerMouseDownEvent(evt) {
-    this._drag=true;
-    // this.fire(MouseEventType.LEFT_DOWN, {
-    //   overlay: this,
-    //   position: evt
-    // })
+  _create(options, getCreateID) {
+    let viewer = this.viewer;
+    let id = Cesium.defaultValue(options.id, CesiumUtils.getID(10));
+    if (id.indexOf('billboard') >= 0) {
+      id = id.substring(9);
+    }
+    let text = Cesium.defaultValue(options.text, '');
+    let height = Cesium.defaultValue(options.height, 150);
+    let size = Cesium.defaultValue(options.size, 5);
+    let color = Cesium.defaultValue(options.color, 'rgba(94, 170, 241, 1)');
+    let panColor = Cesium.defaultValue(options.panColor, 'rgba(94, 170, 241, 1)');
+    panColor = LabelUtils.paseRgba(panColor, 'GLH');
+    let background = Cesium.defaultValue(options.background, 'background1');
+    let position = Cesium.defaultValue(options.position, [108.933337, 34.26178, 200]);
+    let isChange = Cesium.defaultValue(options.isChange, true);
+    getCreateID = Cesium.defaultValue(getCreateID, function () { });
 
-    var position = this._viewer.delegate.scene.camera.pickEllipsoid(
-      evt,
-      this._viewer.delegate.scene.globe.ellipsoid
+    // 用dc的方法试一试
+    let mylayer = new DC.HtmlLayer(id);
+    viewer.addLayer(mylayer);
+
+    let location = new DC.Position(position[0], position[1], position[2]);
+    let divIcon = new DivBillboard(
+      location,
+      '<div class="dipchart">暂无图表数据</div>'
     );
+    divIcon.setStyle({
+      "className": "content"
+    });
+    mylayer.addOverlay(divIcon)
 
-    var ellipsoid = this._viewer.delegate.scene.globe.ellipsoid
-    var cartographic = ellipsoid.cartesianToCartographic(position)
-    var lat = Cesium.Math.toDegrees(cartographic.latitude)
-    var lng = Cesium.Math.toDegrees(cartographic.longitude)
-
-    let labelopt = {
-      type: 'DipChartLabel',
-      position: [lng, lat, 0],
-      selectEvents: () => {},
-      createEvents: () => {},
-      getPosition: () => {}
+    let st = {
+      id: id,
+      position: position,
+    };
+    getCreateID(st);
+  }
+  _update(option) {
+    let viewer = this.viewer;
+    let cartesian2;
+    let entitys = viewer.entities._entities._array;
+    if (LabelUtils.pdValues(option)) {
+        if (LabelUtils.pdValues(option.id)) {
+            for (var i = 0; i < entitys.length; i++) {
+                if (entitys[i].id === option.id) {
+                    if (LabelUtils.pdValues(option.color) || LabelUtils.pdValues(option.text) || LabelUtils.pdValues(option.background)) {
+                        if (LabelUtils.pdValues(option.text)) {
+                            entitys[i].description.getValue().text = option.text;
+                        } else {
+                            option.text = entitys[i].description.getValue().text;
+                        }
+                        if (LabelUtils.pdValues(option.color)) {
+                            entitys[i].description.getValue().color = option.color;
+                        } else {
+                            option.color = entitys[i].description.getValue().color;
+                        }
+                        if (LabelUtils.pdValues(option.background)) {
+                            entitys[i].description.getValue().background = option.background;
+                        } else {
+                            option.background = entitys[i].description.getValue().background;
+                        }
+                        LabelUtils.updateCanvas4(i, option.text, option.color, option.background, function(s) {
+                            if (s) {
+                                that.viewer.entities._entities._array[s.id].billboard.image.setValue(s.canvas);
+                            }
+                        });
+                    }
+                    if (LabelUtils.pdValues(option.height)) {
+                        let cartesian = entitys[i].position._value;
+                        let ellipsoid = viewer.scene.globe.ellipsoid;
+                        let cartographic = ellipsoid.cartesianToCartographic(cartesian);
+                        let lat = Cesium.Math.toDegrees(cartographic.latitude);
+                        let lng = Cesium.Math.toDegrees(cartographic.longitude);
+                        cartesian2 = Cesium.Cartesian3.fromDegrees(lng, lat, option.height, ellipsoid);
+                        entitys[i].position._value = cartesian2;
+                        entitys[i].description.heights = option.height;
+                    }
+                    if (LabelUtils.pdValues(option.size)) {
+                        entitys[i].billboard.scale = option.size;
+                    }
+                    if (LabelUtils.pdValues(option.isChange)) {
+                        entitys[i].billboard.scale = option.isChange;
+                    }
+                    if (LabelUtils.pdValues(option.panColor)) {
+                        option.panColor = LabelUtils.paseRgba(option.panColor, 'GLH');
+                        entitys[i].ellipse._material = new ElliposidFadeMaterialProperty(CesiumUtils.getCesiumColor(option.panColor), 4000);
+                    }
+                    if (LabelUtils.pdValues(option.picture)) {
+                        entitys[i].billboard.image.setValue(option.picture);
+                    }
+                }
+            }
+        }
     }
-    let label = this._labelFactory.create(labelopt.position, labelopt)
-    debugger
-    console.log(Cesium.ScreenSpaceEventType.LEFT_UP)
-    label.on(MouseEventType.LEFT_DOWN, this._handlerDragStartEvent.bind(this))
-    label.on(MouseEventType.LEFT_UP, this._handlerDragEndEvent.bind(this))
-    label.on(MouseEventType.MOUSE_MOVE, this._handlerMouseMoveEvent.bind(this))
-    this._labels.push(label)
-    var selectedLabel = this._viewer.delegate.scene.pick(e.position)
   }
-  _handlerMouseUpEvent(evt) {
-    this._drag=false;
-    this.fire(MouseEventType.LEFT_UP, {
-      overlay: this,
-      position: evt
-    })
-  }
-  _handlerMouseMoveEvent(evt) {
-    this.fire(MouseEventType.MOUSE_MOVE, {
-      overlay: this,
-      position: evt
-    })
-  }
-  addTo(layer) {
-    layer.addOverlay(this._label)
-  }
-  _mouseMoveAction(e) {
-    let point={
-      x:e.endPosition.x,
-      y:e.endPosition.y-20
-    }
-   this.updatePosition(point);
-  }
-  updatePosition(point){
-    if(this._drag&&this._edit){
-        debugger
-       
-        var position = this._viewer.delegate.scene.camera.pickEllipsoid(
-          point,//Parse.parsePosition(point),
-          this._viewer.delegate.scene.globe.ellipsoid
-        )
-        var ellipsoid = this._viewer.delegate.scene.globe.ellipsoid
-        var cartographic = ellipsoid.cartesianToCartographic(position)
-        var lat = Cesium.Math.toDegrees(cartographic.latitude)
-        var lng = Cesium.Math.toDegrees(cartographic.longitude)
-        let  p= [lng, lat, 0];
-        this._label.setPosition(p);
-      }
-  }
-  startEdit() {
-    this._edit = true
-    this._label._trigon.addEventListener(
-      'mousedown',
-      this._handlerMouseDownEvent.bind(this)
-    )
-    this._label._trigon.addEventListener(
-      'mouseup',
-      this._handlerMouseUpEvent.bind(this)
-    )
-    this._label._trigon.addEventListener(
-      'mousemove',
-      this._handlerMouseMoveEvent.bind(this)
-    )
-    // debugger
-    this._viewer.delegate.screenSpaceEventHandler.setInputAction(
-      this._mouseMoveAction.bind(this),
-      Cesium.ScreenSpaceEventType.MOUSE_MOVE
-    )
-   
-  }
-  closeEdit() {
-    this._edit = false;
-    this._label._trigon.removeEventListener(
-      'mousedown',
-      this._handlerMouseDownEvent.bind(this)
-    )
-    this._label._trigon.removeEventListener(
-      'mouseup',
-      this._handlerMouseUpEvent.bind(this)
-    )
-    this._label._trigon.removeEventListener(
-      'mousemove',
-      this._handlerMouseMoveEvent.bind(this)
-    )
-    this._viewer.delegate.screenSpaceEventHandler.removeInputAction(
-      Cesium.ScreenSpaceEventType.MOUSE_MOVE
-    )
-  }
-
-  setStyle() {}
 }
 export default DipChartLabel

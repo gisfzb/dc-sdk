@@ -42,13 +42,17 @@
 <body>
     <div class="whole">
         <div class="demo-meau">
-            <button onclick="Demo.addLabel(event)" status="true" label="chart">自由标记</button>
+            <button onclick="Demo.addLabel(event)" status="true" label="DipChartLabel">数据图</button>
+            <button onclick="Demo.addLabel(event)" status="true" label="ChartLabel">图表式</button>
+            <button onclick="Demo.addLabel(event)" status="true" label="BrokenLineLabel">折线式</button>
+            <button onclick="Demo.addLabel(event)" status="true" label="GlintLabel">闪烁</button>
+            <button onclick="Demo.addLabel(event)" status="true" label="TaperLabel">锥形</button>
             <button onclick="Demo.addEffect(event)" status="true" effect="RainEffect">下雨</button>
             <button onclick="Demo.addEffect(event)" status="true" effect="SnowEffect">下雪</button>
             <button onclick="Demo.addEffect(event)" status="true" effect="FogEffect">雾</button>
-            <!-- <button onclick="Demo.addEffect(event)" status="true" effect="BloomEffect">绽放效果</button> -->
-            <!-- <button onclick="Demo.addEffect(event)" status="true" effect="RadarScanEffect">雷达效果</button> -->
-            <!-- <button onclick="Demo.addEffect(event)" status="true" effect="CircleScanEffect">环形扫描</button> -->
+            <button onclick="Demo.addEffect(event)" status="true" effect="BloomEffect">绽放效果</button>
+            <button onclick="Demo.addEffect(event)" status="true" effect="RadarScanEffect">雷达效果</button>
+            <button onclick="Demo.addEffect(event)" status="true" effect="CircleScanEffect">环形扫描</button>
             <button onclick="Demo.addEffect(event)" status="true" effect="BrightnessEffect">亮度效应</button>
             <button onclick="Demo.addEffect(event)" status="true" effect="showAtmosphere">大气层</button>
         </div>
@@ -68,6 +72,7 @@
             },
         }
         var Demo = {
+            //全局特效
             addEffect(e){
                 let effect = e.currentTarget.getAttribute("effect");
                 let status = e.currentTarget.getAttribute("status");
@@ -82,19 +87,48 @@
                     e.currentTarget.setAttribute("status", "true");
                 }
             },
+            //自由标记
             addLabel(e){
-                let label = e.currentTarget.getAttribute("label");
-                let status = e.currentTarget.getAttribute("status");
-                let opt = {
-                    type: label
+                function selectEvents(e){
+                    console.log(e)
                 }
+                function createEvents(e){
+                    console.log(e);
+                }
+                function getPosition(e){
+                    console.log(e)
+                }
+                let type = e.currentTarget.getAttribute("label");
+                let status = e.currentTarget.getAttribute("status");
+                let options = {
+                    type: type,     //TaperLabel GlintLabel BrokenLineLabel ChartLabel
+                    selectEvents: selectEvents,
+                    createEvents: createEvents,
+                    getPosition: getPosition,
+                    eventType: 'create'   //update
+                    // text: '测试内容'
+                }                
+                
                 if (status == "true") {
-                    Demo.map.startEdit(opt);
+                    Demo.map.addLabel(options, true);
                     e.currentTarget.setAttribute("status", "false");
                 } else {
-                    Demo.map.closeEdit(opt);
+                    Demo.map.addLabel(options, false);
                     e.currentTarget.setAttribute("status", "true");
                 }
+            },
+            updateLabel(id){
+                let option = {
+                   type : "GlintLabel",   //
+                   id: id,
+                   eventType: 'update',   //update
+                    text: '85',
+                    color: '#a91f65'
+                }
+                Demo.map.updateLabel(option);
+            },
+            removeLabel(id){
+                Demo.map.removeLabel(id);
             }
         }
         DC.ready(() => {

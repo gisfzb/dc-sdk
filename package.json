@@ -54,6 +54,6 @@
     "webpack-obfuscator": "^1.8.0"
   },
   "dependencies": {
-    "cesium": "^1.75.0"
+    "cesium": "^1.71.0"
   }
 }

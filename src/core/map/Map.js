@@ -1,9 +1,8 @@
 const { Cesium } = DC.Namespace
 import Viewer from '../viewer/Viewer'
-import BaseImageryLayers from './Layers/BaseImageryLayers';
+import LayerFactory from './Layers/LayerFactory'
 import EffectsFactory from './effects/EffectsFactory';
 import LabelFactory from './labels/LableFactory';
-import { MouseEventType } from '../event/EventType';
 var defaultOptions = {
     widgets: {
         baseLayerPicker: true, //是否显示
@@ -14,7 +13,6 @@ var defaultOptions = {
             }
         ]
     },
-
     baseImageryLayers: [
         {
             type: 'ArcGisMapServerImageryProvider',
@@ -32,34 +30,54 @@ class Map {
         this._labels = []
         this.initMap(id);
         this.callback = callback;
-        this.initEditEvents();
+        // this.initEditEvents();
+        this.layerCache = {};
+
     }
     //底图初始化
     initMap(id) {
-        this.viewer = new Viewer(id);
+        let options = {
+                animation: false, //是否显示动画控件
+                geocoder: false,
+                homeButton: false, //是否显示home
+                timeline: false, //是否显示时间线控件
+                fullscreenButton: true, //是否全屏显示
+                scene3DOnly: true, //如果设置为true，则所有几何图形以3D模式绘制以节约GPU资源
+                infoBox: false, //是否显示点击要素之后显示的信息
+                sceneModePicker: false, //是否显示投影方式控件  三维/二维
+                navigationInstructionsInitiallyVisible: false,
+                navigationHelpButton: false, //是否显示帮助信息控件
+                selectionIndicator: false, //是否显示指示器组件
+                terrainShadows: Cesium.ShadowMode.DISABLED,
+                baseLayerPicker: false
+        }
+        this.viewer = new Viewer(id, options);
 
-        console.log("创建viewer")
-
-        //初始化底图
-        this.baseImageryLayers = new BaseImageryLayers(
-            this.viewer.delegate,
-            this.options.baseImageryLayers
-                ? this.options.baseImageryLayers
-                : defaultOptions.baseImageryLayers
-        )
+        this.layerCache = this._layerCache
 
         this.viewer.locationBar.enable = true   //显示经纬度信息
 
         let defaultOptions = {
-            "showAtmosphere": false,
-
+            "showAtmosphere": false
         }
         this.viewer.setOptions(defaultOptions);
 
+        //图层加载
+        this.layerFactory = new LayerFactory(this.viewer);
         //全局特效
         this._effectsFactory = new EffectsFactory(this.viewer);
         //自由标记
         this._labelFactory = new LabelFactory(this.viewer);
+
+        //初始化底图
+        let layerOption = {
+            type: "ImageLayer",
+            layers: this.options.baseImageryLayers
+            ? this.options.baseImageryLayers
+            : defaultOptions.baseImageryLayers
+        }
+        this.layerFactory._create(layerOption);
+
     }
     //地图事件初始化
     initEditEvents() {
@@ -90,58 +108,56 @@ class Map {
     }
 
     _handlerClickEvent(e) {
-    var position = this.viewer.delegate.scene.camera.pickEllipsoid(
-        e.position,
-        this.viewer.delegate.scene.globe.ellipsoid
-    )
-    var ellipsoid = this.viewer.delegate.scene.globe.ellipsoid
-    var cartographic = ellipsoid.cartesianToCartographic(position)
-    var lat = Cesium.Math.toDegrees(cartographic.latitude)
-    var lng = Cesium.Math.toDegrees(cartographic.longitude)
-
-    let labelopt = {
-        type: 'TaperLabel', // BrokenLineLabel DipChartLabel ChartLabel GlintLabel TaperLabel
-        position: [lng, lat, 0],
-        // background: 'null',
-        selectEvents: () => {},
-        createEvents: () => {},
-        getPosition: () => {}
-    }
-    let label = this._labelFactory.create(labelopt.position, labelopt)
-    label.startEdit();
-    // debugger
-    // console.log(Cesium.ScreenSpaceEventType.LEFT_UP)
-    // label.on(MouseEventType.LEFT_DOWN, this._handlerDragStartEvent.bind(this))
-    // label.on(MouseEventType.LEFT_UP, this._handlerDragEndEvent.bind(this))
-    // label.on(MouseEventType.MOUSE_MOVE, this._handlerMouseMoveEvent.bind(this))
-    // this._labels.push(label)
-    // var selectedLabel = this.viewer.delegate.scene.pick(e.position)
-    }
-    _handlerDragStartEvent(evt, opt) {
-    debugger
-    this.drag = true
-    }
-    _handlerDragEndEvent(evt, opt) {
-    debugger
-    this.drag = false
-    }
-    _handlerMouseMoveEvent(evt) {
-    if(this.drag){
-        let point={
-        x:evt.position.x,
-        y:evt.position.y-20
-        }
         var position = this.viewer.delegate.scene.camera.pickEllipsoid(
-        point,//Parse.parsePosition(point),
-        this.viewer.delegate.scene.globe.ellipsoid
+            e.position,
+            this.viewer.delegate.scene.globe.ellipsoid
         )
         var ellipsoid = this.viewer.delegate.scene.globe.ellipsoid
         var cartographic = ellipsoid.cartesianToCartographic(position)
         var lat = Cesium.Math.toDegrees(cartographic.latitude)
         var lng = Cesium.Math.toDegrees(cartographic.longitude)
-        let  p= [lng, lat, 0];
-        evt.overlay._label.setPosition(p);
+
+        let labelopt = {
+            type: 'TaperLabel', // BrokenLineLabel DipChartLabel ChartLabel GlintLabel TaperLabel
+            position: [lng, lat, 0],
+            // background: 'null',
+            selectEvents: () => {},
+            createEvents: () => {},
+            getPosition: () => {}
+        }
+        let label = this._labelFactory.create(labelopt.position, labelopt)
+        label.startEdit();
+        // debugger
+        // console.log(Cesium.ScreenSpaceEventType.LEFT_UP)
+        // label.on(MouseEventType.LEFT_DOWN, this._handlerDragStartEvent.bind(this))
+        // label.on(MouseEventType.LEFT_UP, this._handlerDragEndEvent.bind(this))
+        // label.on(MouseEventType.MOUSE_MOVE, this._handlerMouseMoveEvent.bind(this))
+        // this._labels.push(label)
+        // var selectedLabel = this.viewer.delegate.scene.pick(e.position)
     }
+    _handlerDragStartEvent(evt, opt) {
+    this.drag = true
+    }
+    _handlerDragEndEvent(evt, opt) {
+    this.drag = false
+    }
+    _handlerMouseMoveEvent(evt) {
+        if(this.drag){
+            let point={
+            x:evt.position.x,
+            y:evt.position.y-20
+            }
+            var position = this.viewer.delegate.scene.camera.pickEllipsoid(
+            point,//Parse.parsePosition(point),
+            this.viewer.delegate.scene.globe.ellipsoid
+            )
+            var ellipsoid = this.viewer.delegate.scene.globe.ellipsoid
+            var cartographic = ellipsoid.cartesianToCartographic(position)
+            var lat = Cesium.Math.toDegrees(cartographic.latitude)
+            var lng = Cesium.Math.toDegrees(cartographic.longitude)
+            let  p= [lng, lat, 0];
+            evt.overlay._label.setPosition(p);
+        }
     }
     
 
@@ -172,23 +188,16 @@ class Map {
     }
 
     //添加标记
-    addLabel(options){
-        console.log(options);
-        // this._labelFactory.create(options);
-        this._edit = true;
-        this.initEditEvents();
+    addLabel(options, isClick){
+        this._labelFactory.add(options, isClick);
     }
     //更新注记
     updateLabel(options){
-        // this._labelFactory.update(options)
+        this._labelFactory.update(options);
     }
     //删除标记
-    removeLabel(options){
-        console.log(options)
+    removeLabel(id){
+        this._labelFactory.delete(id);
     }
-
-
-
-
 }
 export default Map;
