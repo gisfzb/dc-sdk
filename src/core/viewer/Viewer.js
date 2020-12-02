@@ -32,6 +32,7 @@ const { Cesium } = DC.Namespace
 const DEF_OPTS = {
   animation: false, //Whether to create animated widgets, lower left corner of the meter
   baseLayerPicker: false, //Whether to display the layer selector
+  imageryProvider: false, // Whether to display the default imagery
   fullscreenButton: false, //Whether to display the full-screen button
   geocoder: false, //To display the geocoder widget, query the button in the upper right corner
   homeButton: false, //Whether to display the Home button
@@ -52,8 +53,8 @@ class Viewer {
     }
 
     this._delegate = new Cesium.Viewer(id, {
-      ...options,
-      ...DEF_OPTS
+      ...DEF_OPTS,
+      ...options
     }) // Initialize the viewer
 
     /**
