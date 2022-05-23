@@ -1,11 +1,13 @@
 class Measure {
     constructor(id) {
-
+        this.options = null,
+        this.totalLable =  null,   //角度label  
+        this.exLine = null //辅助线
     }
 
-    get id() { }
+    clearLastNoEnd(){
 
-    get layerId() { }
+    }
 
     getName(){
         return "测量工程类";
