@@ -224,7 +224,11 @@ Cesium.Math.midPosition = midPosition
 Cesium.Math.parabola = parabola
 Cesium.Math.curve = curve
 
+import {Measure} from '@dc-modules/measure'
+
+
 const components = {
+  Measure,
   /**
    * base
    */

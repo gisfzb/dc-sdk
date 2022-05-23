@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DC H5</title>
+  <script src="dist/dc.base.min.js"></script>
+  <script src="dist/dc.core.min.js"></script>
+  <link href="dist/dc.core.min.css" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body,
+    #viewer-container {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="viewer-container"></div>
+  <script>
+    /**
+ * @Author: Caven
+ * @Date: 2020-08-18 19:37:42
+ */
+
+    let viewer = undefined
+
+    function initViewer() {
+      viewer = new DC.Viewer('viewer-container')
+      let key = '64a7440068a2bbc276c11927b54458f4'
+      let baselayer = DC.ImageryLayerFactory.createTdtImageryLayer({
+        key,
+        style: 'img'
+      })
+      viewer.addBaseLayer(baselayer)
+    }
+
+    DC.ready(initViewer)
+
+  </script>
+</body>
+
+</html>
