@@ -1,0 +1,1 @@
+export {default as Draw2} from './Draw2'

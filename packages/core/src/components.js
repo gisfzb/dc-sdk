@@ -225,10 +225,11 @@ Cesium.Math.parabola = parabola
 Cesium.Math.curve = curve
 
 import {Measure} from '@dc-modules/measure'
-
+import {Draw2} from '@dc-modules/draw'
 
 const components = {
   Measure,
+  Draw2,
   /**
    * base
    */
