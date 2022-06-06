@@ -4,7 +4,6 @@ yarn-debug.log*
 yarn-error.log*
 web/
 pack/
-dist/
 # Editor directories and files
 .idea
 .vscode
@@ -13,3 +12,4 @@ dist/
 *.njsproj
 package-lock.json
 .DS_Store
+dist/

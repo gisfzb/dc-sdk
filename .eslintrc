@@ -17,11 +17,8 @@
     "__AUTHOR__": false,
     "__HOME_PAGE__": false,
     "__REPOSITORY__": false,
-    "echarts": false,
-    "mapv": false,
     "DC": false,
-    "Cesium": false,
-    "@dc-modules": false
+    "Cesium": false
   },
   "rules": {
     "global-require": 0,
